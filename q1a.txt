@@ -1,0 +1,1 @@
+Increasing theta results in a clockwise rotation in a 2D space where y is pointing down. If the y axis points upwards, then increasing theta will result in a counter-clockwise rotation. 
