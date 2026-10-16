@@ -8,17 +8,25 @@
 class Sprite {  // could derive from sf::Drawable if you're willing to pay for a vptr, but not
                 // necessary.
 public:
-    Sprite(const sf::Texture& texture) {
-        // TODO
+    Sprite(const sf::Texture& texture) : 
+        mTexture(&texture) { 
+        mMinPointTex = sf::Vector2f(0, 0);
+        mMaxPointTex = sf::Vector2f(texture.getSize());
     }
 
     Sprite(const sf::Texture& texture, const sf::Vector2f& texMinPoint,
-           const sf::Vector2f& texMaxPoint) {
-        // TODO
-    }
+           const sf::Vector2f& texMaxPoint) : 
+        mTexture(&texture),
+        mMinPointTex(texMinPoint),
+        mMaxPointTex(texMaxPoint) {}
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const {
-        // TODO
+        recomputeVertexArray();
+
+        states.texture = mTexture;
+        //states.blendMode = sf::BlendNone;
+
+        target.draw(mVertexArray, states);
     }
 
     sf::Vector2f& position() { return mTransform.translation; }
@@ -34,12 +42,29 @@ private:
     //     ranging from [0, 1] in both dimensions.
     //   - the next 3 correspond to the vertices of the bottom-right triangle. of the default
     //     rectangle.
-    static constexpr std::array<sf::Vector2f, 6> DEFAULT_VERTICES = {};  // TODO
+    static constexpr std::array<sf::Vector2f, 6> DEFAULT_VERTICES = {
+        sf::Vector2f(0.0f, 0.0f), sf::Vector2f(0.0f, 1.0f), sf::Vector2f(1.0f, 0.0f),
+        sf::Vector2f(0.0f, 1.0f), sf::Vector2f(1.0f, 1.0f), sf::Vector2f(1.0f, 0.0f)}; 
 
     // if mTexture is valid, recomputes the positions and coords of sf::Vertex for each
     // of 6 possible entries in mVertexArray.
     void recomputeVertexArray() const {
-        // TODO
+        if (mTexture->getSize().x != 0 && mTexture->getSize().y != 0) {
+            mVertexArray = sf::VertexArray(sf::PrimitiveType::Triangles, 6);
+
+            for (int i = 0; i < 6; i++) {
+                mVertexArray[i].position =
+                    mTransform.applyPoint(DEFAULT_VERTICES[i] * (mMaxPointTex - mMinPointTex)) + mOrigin;
+            }
+
+            mVertexArray[0].texCoords = mMinPointTex;
+            mVertexArray[1].texCoords = sf::Vector2f(mMinPointTex.x, mMaxPointTex.y);
+            mVertexArray[2].texCoords = sf::Vector2f(mMaxPointTex.x, mMinPointTex.y);
+
+            mVertexArray[3].texCoords = sf::Vector2f(mMinPointTex.x, mMaxPointTex.y);
+            mVertexArray[4].texCoords = mMaxPointTex;
+            mVertexArray[5].texCoords = sf::Vector2f(mMaxPointTex.x, mMinPointTex.y);
+        }
     }
 
     const sf::Texture* mTexture;
@@ -48,7 +73,7 @@ private:
     sf::Vector2f mMinPointTex;             // AABB for subtexture min point along both x, y
     sf::Vector2f mMaxPointTex;             // AABB for subtexture max point along both x, y
     sf::Vector2f mOrigin;  // position in tex coords of the sprite origin, relative to minPoint
-    BasicTransform mTransform;
+    BasicTransform mTransform = BasicTransform({1, 1}, {0, 0});
 };
 
 #endif

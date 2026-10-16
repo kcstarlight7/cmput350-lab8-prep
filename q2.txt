@@ -1,4 +1,12 @@
 a. Top left: (200, 150)   (200, 450)   (600, 150)
 Bottom right: (600, 150)   (200, 450)	(600, 450)
 
-b. 
+b. With an index buffer, the quad above can be represented without duplicating by just storing each point once into another buffer, 
+and when the triangles are being rendered, it can just take indices 0, 1, 2 for one triangle, and 1, 2, 3 for the other triangle. 
+	This would take 48 bytes, whereas the original would use 48 bytes. This new scheme would perform better the more times the same vertex 
+is used by distinct triangles. If doubles were used instead of floats, the new scheme would take 80 bytes instead. 
+
+c. (Assuming the rectangle in this question is the result rectangle in question a.) 
+(500 - 200) / (600 - 200) = 0.75
+(301 - 150) / (450 - 150) = 0.50333...
+(0.7500, 0.50333)
